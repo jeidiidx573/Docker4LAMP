@@ -1,0 +1,58 @@
+version: '3'
+services:
+  web:
+    build:
+      context: ./web
+    image: centos7
+    container_name: httpd
+    ports:
+      - 8080:80
+    volumes:
+      - ./web/public_html:/var/www/html
+
+  db:
+    image: mysql:5.7
+    container_name: db_mysql
+    volumes:
+      - ./mysql/data:/var/lib/mysql # DB永続化
+      - ./mysql/logs:/var/log/mysql # log
+      - ./mysql/my.cnf:/etc/mysql/conf.d/my.cnf # mysql設定
+    environment:
+      - MYSQL_DATABASE=db
+      - MYSQL_USER=root
+      - MYSQL_PASSWORD=root
+      - MYSQL_ROOT_PASSWORD=root
+      - TZ=Asia/Tokyo
+    command: mysqld --character-set-server=utf8mb4 --collation-server=utf8mb4_unicode_ci
+    ports:
+      - 3306:3306
+
+  phpmyadmin:
+    container_name: phpmyadmin
+    image: phpmyadmin/phpmyadmin
+    environment:
+    - PMA_ARBITRARY=1
+    - PMA_HOSTS=db
+    - PMA_USER=root
+    - PMA_PASSWORD=root
+    ports:
+    - 8090:80
+
+# web: 起動するコンテナサービス名
+#   build web/Dockerfileの内容を元にイメージをビルドする
+#   image: 使用するDockerイメージ名
+#   container_name: コンテナ名(指定しなくてもよい)
+#   ports: ポート番号を指定
+#   volumes: マウントするディレクトリ。./webに置いたファイルがそのまま/var/www/htmlにマウントされる
+
+# 1.
+# docker-compose up -d
+# でコンテナ起動。-dはバックグラウンドで実行オプション
+
+# 2.
+# docker ps
+# でimage:centos7が起動されているのを確認できる。
+
+# 3.
+# docker-compose down
+# でコンテナ停止
